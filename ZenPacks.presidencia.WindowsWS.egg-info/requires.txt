@@ -1,0 +1,2 @@
+ZenPacks.community.WMIPerf_Windows
+ZenPacks.community.WMIDataSource

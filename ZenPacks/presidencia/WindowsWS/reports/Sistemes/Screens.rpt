@@ -1,0 +1,212 @@
+<html>
+<body class="z-bc">
+<tal:block tal:define="
+    tableName string:hwscreentable;
+    tm here/ZenTableManager;
+    tableState python:tm.getTableState(tableName);
+    sts python:tm.setReqTableState;
+    reportColumns python:[['Device',            'Device Name',  'deviceLink',           sts(tableName, 'sDevice', here.REQUEST.get('sDevice','1')),0],
+                          ['DeviceClass',       'Device Class', 'deviceClassPathLink',  sts(tableName, 'sDeviceClass', here.REQUEST.get('sDeviceClass','1')),1],
+                          ['IP',                'IP Address',   'manageIp',             sts(tableName, 'sIP', here.REQUEST.get('sIP','1')),2],
+                          ['ProductionState',   'State',        'productionState',      sts(tableName, 'sProductionState', here.REQUEST.get('sProductionState','0')),3],
+                          ['Tag',               'Tag',          'tag',                  sts(tableName, 'sTag', here.REQUEST.get('sTag','0')),4],
+                          ['Manufacturer',      'Manufacturer', 'manufacturerLink',     sts(tableName, 'sManufacturer', here.REQUEST.get('sManufacturer','0')),5],
+                          ['Model',             'Model',        'modelLink',            sts(tableName, 'sModel', here.REQUEST.get('sModel','1')),6],
+                          ['ProductKey',        'ProductKey',   'productKey',           sts(tableName, 'sProductKey', here.REQUEST.get('sProductKey','1')),7],
+                          ['Serial',            'Serial#',      'serial',               sts(tableName, 'sSerial', here.REQUEST.get('sSerial','1')),8],
+                          ['Description',       'Description',  'description',          sts(tableName, 'sDescription', here.REQUEST.get('sDescription','1')),9],
+                          ['Location',          'Location',     'locationLink',         sts(tableName, 'sLocation', here.REQUEST.get('sLocation','1')),10],
+                         ];
+
+    cDeviceClass python:sts(tableName, 'cDeviceClass', here.REQUEST.get('cDeviceClass','/'));
+    cGroup python:sts(tableName, 'cGroup', here.REQUEST.get('cGroup','/'));
+    cSystem python:sts(tableName, 'cSystem', here.REQUEST.get('cSystem','/'));
+    cLocation python:sts(tableName, 'cLocation', here.REQUEST.get('cLocation','/'));
+    cProductionState python:sts(tableName, 'cProductionState', here.REQUEST.get('cProductionState','1000'));
+
+    cManufacturer python:sts(tableName, 'cManufacturer', here.REQUEST.get('cManufacturer',''));
+    cProductName python:sts(tableName, 'cProductName', here.REQUEST.get('cProductName',''));
+
+    pluginOutput python:here.ReportServer.plugin('HWScreenInventoryCollection', 
+                                             {
+                                             'meta_type':'HWScreen',
+                                             'cDeviceClass':cDeviceClass, 
+                                             'cGroup':cGroup,
+                                             'cSystem':cSystem,
+                                             'cLocation':cLocation,
+                                             'cProductionState':cProductionState,
+                                             'cManufacturer':cManufacturer,
+                                             'cProductName':cProductName,
+                                             });
+    
+    batch python:tm.getBatch(tableName,pluginOutput['components']);
+    exportFields python:['deviceName', 'deviceClassPath', 'manageIp', 'productionState', 'tag', 'manufacturerName', 'model', 'productKey', 'serial', 'description', 'location'];
+    isMail python:here.REQUEST.get('isMail','0');
+    ">
+
+ <tal:block metal:use-macro="here/reportMacros/macros/exportableReport">
+  <tal:block metal:fill-slot="report">
+   <tal:block metal:use-macro="here/templates/macros/page1">
+   <tal:block metal:fill-slot="breadCrumbPane"><span metal:use-macro="here/miscmacros/macros/reportBreadCrumbsList"/></tal:block>
+    <tal:block metal:fill-slot="contentPane">
+     <tal:block tal:condition="python:isMail=='1'">
+      <img src="http://www.presidencia.intranet/Gesteco/images/logo_direccio_serveis.jpg" width="200" /><br>
+      <span tal:condition="python:here.REQUEST.get('showAll','')=='show all'" style="font-size=10pt;font-weight:bold;font-family:helvetica,sans-serif;" tal:content="python:here.REQUEST.get('title', 'No title specified')"/>
+      <span tal:condition="python:here.REQUEST.get('showAll','')!='show all'" style="font-size=10pt;font-weight:bold;font-family:helvetica,sans-serif;" tal:content="python:'%s (TOP 40)'%here.REQUEST.get('title', 'No title specified')"/>
+     </tal:block> <!--tal:block tal:condition="python:isMail=='1'"-->
+     <tal:block tal:condition="python:isMail=='0'"><!--Interface for filtering, only viewable if not a mailed Report-->
+     <script language="javascript">
+     function toggleAndSubmit(form,varname){
+          if (form.elements.namedItem(varname).value==0) form.elements.namedItem(varname).value=1;
+          else form.elements.namedItem(varname).value=0;
+          form.submit();
+          }
+     </script>
+     <script type="text/javascript" src="/zport/portal_skins/zenmodel/datePicker.js"> </script>
+     <form id="availabilityForm" method="submit">
+      <table class="zentable">
+      <tr><td style="vertical-align:text-top;">
+        <table class="zentable"> <!-- Device Filtering -->
+          <tr><th class="tableheader" colspan="4">&nbsp;Device Specification</th></tr>
+          <tr>
+            <td class="tableheader">DeviceClass:</td>
+            <td class="tablevalues">
+              <select name="cDeviceClass" onchange="javascript:this.form.submit();">
+              <tal:block tal:repeat="org here/Devices/getOrganizerNames">
+              <option tal:content="org" tal:condition="python:'/Ignore' not in org" tal:attributes="selected python:org==cDeviceClass"/>
+              </tal:block>
+              </select>
+            </td>
+            <td class="tableheader">Group:</td>
+            <td class="tablevalues">
+              <select name="cGroup" onchange="javascript:this.form.submit();">
+              <option tal:repeat="org here/Groups/getOrganizerNames" tal:content="org" tal:attributes="selected python:org==cGroup"/>
+              </select>
+            </td>
+          </tr><tr>
+            <td class="tableheader">System:</td>
+            <td class="tablevalues">
+              <select name="cSystem" onchange="javascript:this.form.submit();">
+              <option tal:repeat="org here/Systems/getOrganizerNames" tal:content="org" tal:attributes="selected python:org==cSystem"/>
+              </select>
+            </td>
+            <td class="tableheader">Location:</td>
+            <td class="tablevalues">
+              <select name="cLocation" onchange="javascript:this.form.submit();">
+              <option tal:repeat="org here/Locations/getOrganizerNames" tal:content="org" tal:attributes="selected python:org==cLocation"/>
+              </select>
+            </td>
+          </tr><tr>
+            <td class="tableheader">Production State:</td>
+            <td class="tablevalues">
+              <select name="cProductionState" onchange="javascript:this.form.submit();">
+              <option value='All'>All</option>
+              <option tal:repeat="state python:[d.split(':') for d in here.dmd.prodStateConversions]" tal:content="python:state[0]" tal:attributes="selected python:state[1]==cProductionState;value python:state[1];"/>
+              </select>
+            </td>
+            <td class="tableheader"/><td class="tablevalues"/>
+          </tr>
+        </table>
+      </td><td rowspan="2" style="vertical-align:text-top;" class="tableheader">
+        <table class="zentable"> <!--Show/Hide Columns table-->
+          <tr><th class="tableheader" colspan="2">&nbsp;Show/hide Columns</th></tr>
+          <tal:block tal:repeat="column reportColumns" >
+               <tr>
+                <td>
+                <input type="checkbox" tal:attributes="checked python:column[3]=='1';onchange python:'javascript:toggleAndSubmit(this.form,\'s%s\');;'%column[0];" >
+                <span tal:content="python:column[1]"/>
+                <input type="hidden" tal:attributes="name python:'s%s'%column[0];value python:column[3];">
+                </td>
+               </tr>
+          </tal:block>
+        </table>
+      </td></tr>
+      <tr><td style="vertical-align:text-top;">
+        <table class="zentable"> <!--Additional Filters Table-->
+          <tr><th class="tableheader" colspan="4">&nbsp;Screen filtering</th></tr>
+          <tr>
+          <td class="tableheader">Manufacturer:</td>
+            <td class="tablevalues">
+              <select name="cManufacturer" onchange="javascript:this.form.submit();">
+              <option value="">All Manufacturers
+              <option tal:repeat="org python:pluginOutput['hwman']" tal:content="org" tal:attributes="selected python:org==cManufacturer"/>
+              </select>
+            </td>
+            <td class="tableheader">Model:</td>
+            <td class="tablevalues">
+              <select name="cProductName" onchange="javascript:this.form.submit();">
+                <option value="">All Models
+                <option tal:repeat="org python:pluginOutput['hwproducts']" tal:content="org" tal:attributes="selected python:org==cProductName"/>
+              </select>
+            </td>
+          </tr>
+        </table>
+      </td><td/></tr>
+      </table>
+     </form>
+    </tal:block><!--tal:block tal:condition="python:isMail=='0'-->
+    <form method="POST" tal:attributes="action request/URL;"
+                    tal:define="tabletitle here/title_or_id;
+                    showfilterbox python:True;"
+                    >
+     <tal:block metal:use-macro="here/zenuimacros/macros/zentable">
+      <tal:block metal:fill-slot="zentablecontents">
+        <tal:block tal:condition="python:isMail=='0'">
+         <tr><td colspan="100%" class="tableheader" align='center'><form metal:use-macro="here/zenTableNavigation/macros/navtool"></form></td></tr>
+        </tal:block>
+        <tal:block tal:condition="python:isMail=='0'">
+         <tr>
+          <tal:block tal:repeat="column reportColumns">
+          <th tal:condition="python:column[3]=='1'" tal:replace="structure python:tm.getTableHeader(tableName,column[2],column[1])"/>
+          </tal:block>
+         </tr>
+        </tal:block>
+        <tal:block tal:condition="python:isMail=='1'" >
+          <tr style="font-weight:bold;background-color:#E0E0E0;font-size:9pt;text-align:center;font-family: helvetica, sans-serif;">
+           <tal:block tal:repeat="column reportColumns">
+           <td tal:condition="python:column[3]=='1'" style="font-weight:bold;" tal:content="python:column[1]"/>
+           </tal:block>
+         </tr>
+        </tal:block>
+        <tal:block tal:repeat="screen batch">
+         <tal:block tal:define="screenresults python:[
+                                screen.deviceLink,
+                                screen.deviceClassPathLink,
+                                screen.manageIp,
+                                screen.productionState,
+                                screen.tag,
+                                screen.manufacturerLink,
+                                screen.modelLink,
+                                screen.productKey,
+                                screen.serial,
+                                screen.description,
+                                screen.locationLink,
+                                ];
+                                ">
+         <tr tal:define="odd repeat/screen/odd" tal:attributes="class python:odd and 'odd' or 'even'">
+          <tal:block tal:condition="python:isMail=='0'">
+            <tal:block tal:repeat="column reportColumns">
+            <td class="tablevalues" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%screenresults[column[4]]" />
+            </tal:block>
+          </tal:block>
+          <tal:block tal:condition="python:isMail=='1'">
+            <tal:block tal:repeat="column reportColumns">
+            <td class="inspector" style="font-size:9pt;background-color:#F9F9FF" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%screenresults[column[4]]"/>
+            </tal:block>
+          </tal:block>
+         </tr>
+         </tal:block>
+        </tal:block>
+        <tal:block tal:condition="python:isMail=='0'">
+         <tr><td colspan="100%" class="tableheader" align='center'><form metal:use-macro="here/zenTableNavigation/macros/navtool"></form></td></tr>
+        </tal:block>
+      </tal:block> <!--zentablecontents-->
+     </tal:block> <!--use-macro="here/zenuimacros/macros/zentable"-->
+    </form>
+    </tal:block> <!--metal:fill-slot="contentPane"-->
+   </tal:block> <!--use-macro="here/templates/macros/page1"-->
+  </tal:block> <!--fill-slot="report"-->
+ </tal:block> <!--use-macro="here/reportMacros/macros/exportableReport"-->
+</tal:block> <!--tal:define=-->
+</body>
+</html>

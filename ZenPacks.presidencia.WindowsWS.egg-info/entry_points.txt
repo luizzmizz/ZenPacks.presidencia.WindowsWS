@@ -1,0 +1,3 @@
+[zenoss.zenpacks]
+ZenPacks.presidencia.WindowsWS = ZenPacks.presidencia.WindowsWS
+
