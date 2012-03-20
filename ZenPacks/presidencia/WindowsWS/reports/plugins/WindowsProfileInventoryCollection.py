@@ -27,13 +27,19 @@ class WindowsProfileInventoryCollection:
         if productionState!='All':
           resultset=set ([ dev for dev in resultset if dev.productionState==int(productionState) ])
         components=[ c.getObject() for c in dmd.Devices.componentSearch({'meta_type':'WindowsProfile'}) if c.getObject().device() in resultset ]
-
+        
+        superreport['profileNames']=[ c.name() for c in components ]
+        
         lastLogonFilter=args.get('cLastLogonFilter','1')
+        cProfileName=args.get('cProfileName','')
+
         
         #for each device at resultset & survivordevs, generate the info
         for c in components:
           dev=c.device()
-          if (lastLogonFilter=='1' and (dev.getHWTag()!='' and ('\\%s'%dev.getHWTag() in c.path))) or lastLogonFilter=='0':
+          condition=((lastLogonFilter=='1' and (dev.getHWTag()!='' and ('\\%s'%dev.getHWTag() in c.path))) or lastLogonFilter=='0')
+          condition=condition and (cProfileName=='' or (cProfileName!='' and cProfileName==c.name()))
+          if condition:
             report.append(
                    Utils.Record(
                      deviceName = dev.name(),

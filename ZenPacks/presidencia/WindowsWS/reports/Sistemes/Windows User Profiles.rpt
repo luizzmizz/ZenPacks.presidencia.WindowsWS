@@ -23,6 +23,8 @@
     cLocation python:sts(tableName, 'cLocation', here.REQUEST.get('cLocation','/'));
     cProductionState python:sts(tableName, 'cProductionState', here.REQUEST.get('cProductionState','1000'));
     cLastLogonFilter python:sts(tableName, 'cLastLogonFilter', here.REQUEST.get('cLastLogonFilter','1'));
+    cProfileName python:sts(tableName, 'cProfileName', here.REQUEST.get('cProfileName',''));
+    
     pluginOutput python:here.ReportServer.plugin('WindowsProfileInventoryCollection', 
                                              {
                                              'cDeviceClass':cDeviceClass, 
@@ -31,6 +33,7 @@
                                              'cLocation':cLocation,
                                              'cProductionState':cProductionState,
                                              'cLastLogonFilter':cLastLogonFilter,
+                                             'cProfileName':cProfileName,
                                              });
     
     batch python:tm.getBatch(tableName,pluginOutput['components']);
@@ -127,6 +130,13 @@
               <option tal:content="python:'Only main user profiles'" tal:attributes="value python:'1';selected python:cLastLogonFilter=='1'"/>
               </select>
             </td>
+            <td class="tableheader">Profile Name:</td>
+            <td class="tablevalues">
+              <select name="cProfileName" onchange="javascript:this.form.submit();">
+              <option value=''>All profiles</option>
+              <option tal:repeat="org python:pluginOutput['profileNames']" tal:content="org" tal:attributes="value org;selected python:org==cProfileName"/>
+              </select>
+            </td>            
           </tr>
         </table>
       </td><td/></tr>
