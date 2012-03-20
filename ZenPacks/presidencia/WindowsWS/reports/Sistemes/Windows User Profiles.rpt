@@ -1,45 +1,40 @@
 <html>
 <body class="z-bc">
 <tal:block tal:define="
-    tableName string:hwscreentable;
+    tableName string:windowsprofiletable;
     tm here/ZenTableManager;
     tableState python:tm.getTableState(tableName);
     sts python:tm.setReqTableState;
-    reportColumns python:[['Device',            'Device Name',  'deviceLink',           sts(tableName, 'sDevice', here.REQUEST.get('sDevice','1')),0],
-                          ['DeviceClass',       'Device Class', 'deviceClassPathLink',  sts(tableName, 'sDeviceClass', here.REQUEST.get('sDeviceClass','1')),1],
-                          ['IP',                'IP Address',   'manageIp',             sts(tableName, 'sIP', here.REQUEST.get('sIP','1')),2],
-                          ['ProductionState',   'State',        'productionState',      sts(tableName, 'sProductionState', here.REQUEST.get('sProductionState','0')),3],
-                          ['Tag',               'Tag',          'tag',                  sts(tableName, 'sTag', here.REQUEST.get('sTag','0')),4],
-                          ['Manufacturer',      'Manufacturer', 'manufacturerLink',     sts(tableName, 'sManufacturer', here.REQUEST.get('sManufacturer','0')),5],
-                          ['Model',             'Model',        'modelLink',            sts(tableName, 'sModel', here.REQUEST.get('sModel','1')),6],
-                          ['ProductKey',        'ProductKey',   'productKey',           sts(tableName, 'sProductKey', here.REQUEST.get('sProductKey','1')),7],
-                          ['Serial',            'Serial#',      'serial',               sts(tableName, 'sSerial', here.REQUEST.get('sSerial','1')),8],
-                          ['Description',       'Description',  'description',          sts(tableName, 'sDescription', here.REQUEST.get('sDescription','1')),9],
-                          ['Location',          'Location',     'locationLink',         sts(tableName, 'sLocation', here.REQUEST.get('sLocation','1')),10],
+    reportColumns python:[['Device',            'Device Name',  'deviceLink',           sts(tableName, 'sDevice', here.REQUEST.get('sDevice','1')),0, 'deviceName'],
+                          ['DeviceClass',       'Device Class', 'deviceClassPathLink',  sts(tableName, 'sDeviceClass', here.REQUEST.get('sDeviceClass','1')),1, 'deviceClassPath'],
+                          ['IP',                'IP Address',   'manageIp',             sts(tableName, 'sIP', here.REQUEST.get('sIP','1')),2, 'manageIp'],
+                          ['ProductionState',   'State',        'productionState',      sts(tableName, 'sProductionState', here.REQUEST.get('sProductionState','0')),3, 'productionState'],
+                          ['Tag',               'Tag',          'tag',                  sts(tableName, 'sTag', here.REQUEST.get('sTag','0')),4, 'tag'],
+                          ['ProfileName',       'Profile Name', 'profileName',          sts(tableName, 'sProfileName', here.REQUEST.get('sProfileName','1')),5, 'profileName'],
+                          ['LastLogon',         'Last logon',   'lastLogon',            sts(tableName, 'sLastLogon', here.REQUEST.get('sLastLogon','1')),6, 'lastLogon'],
+                          ['ProfileSize',       'Profile Size', 'profileSize',          sts(tableName, 'sProfileSize', here.REQUEST.get('sProfileSize','1')),7, 'profileBytes'],
+                          ['DesktopSize',       'Desktop Size', 'desktopSize',          sts(tableName, 'sDesktopSize', here.REQUEST.get('sDesktopSize','1')),8, 'desktopBytes'],
+                          ['Path',              'Path',         'path',                 sts(tableName, 'sPath', here.REQUEST.get('sPath','1')),9, 'path'],
+                          ['Location',          'Location',     'locationLink',         sts(tableName, 'sLocation', here.REQUEST.get('sLocation','1')),10, 'location'],
                          ];
-
     cDeviceClass python:sts(tableName, 'cDeviceClass', here.REQUEST.get('cDeviceClass','/'));
     cGroup python:sts(tableName, 'cGroup', here.REQUEST.get('cGroup','/'));
     cSystem python:sts(tableName, 'cSystem', here.REQUEST.get('cSystem','/'));
     cLocation python:sts(tableName, 'cLocation', here.REQUEST.get('cLocation','/'));
     cProductionState python:sts(tableName, 'cProductionState', here.REQUEST.get('cProductionState','1000'));
-
-    cManufacturer python:sts(tableName, 'cManufacturer', here.REQUEST.get('cManufacturer',''));
-    cProductName python:sts(tableName, 'cProductName', here.REQUEST.get('cProductName',''));
-
-    pluginOutput python:here.ReportServer.plugin('HWScreenInventoryCollection', 
+    cLastLogonFilter python:sts(tableName, 'cLastLogonFilter', here.REQUEST.get('cLastLogonFilter','1'));
+    pluginOutput python:here.ReportServer.plugin('WindowsProfileInventoryCollection', 
                                              {
                                              'cDeviceClass':cDeviceClass, 
                                              'cGroup':cGroup,
                                              'cSystem':cSystem,
                                              'cLocation':cLocation,
                                              'cProductionState':cProductionState,
-                                             'cManufacturer':cManufacturer,
-                                             'cProductName':cProductName,
+                                             'cLastLogonFilter':cLastLogonFilter,
                                              });
     
     batch python:tm.getBatch(tableName,pluginOutput['components']);
-    exportFields python:['deviceName', 'deviceClassPath', 'manageIp', 'productionState', 'tag', 'manufacturerName', 'model', 'productKey', 'serial', 'description', 'location'];
+    exportFields python:['deviceName', 'deviceClassPath', 'manageIp', 'productionState', 'tag', 'profileName', 'lastLogon', 'profileBytes', 'desktopBytes', 'path', 'location'];
     isMail python:here.REQUEST.get('isMail','0');
     ">
 
@@ -121,21 +116,15 @@
         </table>
       </td></tr>
       <tr><td style="vertical-align:text-top;">
-        <table class="zentable"> <!--Additional Filters Table-->
-          <tr><th class="tableheader" colspan="4">&nbsp;Screen filtering</th></tr>
+      <!--Additional Filters Table-->
+        <table class="zentable"> 
+          <tr><th class="tableheader" colspan="4">&nbsp;Windows Profile filtering</th></tr>
           <tr>
-          <td class="tableheader">Manufacturer:</td>
+            <td class="tableheader">User profiles:</td>
             <td class="tablevalues">
-              <select name="cManufacturer" onchange="javascript:this.form.submit();">
-              <option value="">All Manufacturers
-              <option tal:repeat="org python:pluginOutput['hwman']" tal:content="org" tal:attributes="selected python:org==cManufacturer"/>
-              </select>
-            </td>
-            <td class="tableheader">Model:</td>
-            <td class="tablevalues">
-              <select name="cProductName" onchange="javascript:this.form.submit();">
-                <option value="">All Models
-                <option tal:repeat="org python:pluginOutput['hwproducts']" tal:content="org" tal:attributes="selected python:org==cProductName"/>
+              <select name="cLastLogonFilter" onchange="javascript:this.form.submit();">
+              <option tal:content="python:'All user profiles'" tal:attributes="value python:'0';selected python:cLastLogonFilter=='1'"/>
+              <option tal:content="python:'Only main user profiles'" tal:attributes="value python:'1';selected python:cLastLogonFilter=='1'"/>
               </select>
             </td>
           </tr>
@@ -156,7 +145,7 @@
         <tal:block tal:condition="python:isMail=='0'">
          <tr>
           <tal:block tal:repeat="column reportColumns">
-          <th tal:condition="python:column[3]=='1'" tal:replace="structure python:tm.getTableHeader(tableName,column[2],column[1])"/>
+          <th tal:condition="python:column[3]=='1'" tal:replace="structure python:tm.getTableHeader(tableName,column[5],column[1])"/>
           </tal:block>
          </tr>
         </tal:block>
@@ -167,30 +156,30 @@
            </tal:block>
          </tr>
         </tal:block>
-        <tal:block tal:repeat="screen batch">
-         <tal:block tal:define="screenresults python:[
-                                screen.deviceLink,
-                                screen.deviceClassPathLink,
-                                screen.manageIp,
-                                screen.productionState,
-                                screen.tag,
-                                screen.manufacturerLink,
-                                screen.modelLink,
-                                screen.productKey,
-                                screen.serial,
-                                screen.description,
-                                screen.locationLink,
+        <tal:block tal:repeat="profile batch">
+         <tal:block tal:define="profileresults python:[
+                                profile.deviceLink,
+                                profile.deviceClassPathLink,
+                                profile.manageIp,
+                                profile.productionState,
+                                profile.tag,
+                                profile.profileName,
+                                profile.lastLogon,
+                                profile.profileSize,
+                                profile.desktopSize,
+                                profile.path,
+                                profile.locationLink,
                                 ];
                                 ">
-         <tr tal:define="odd repeat/screen/odd" tal:attributes="class python:odd and 'odd' or 'even'">
+         <tr tal:define="odd repeat/profile/odd" tal:attributes="class python:odd and 'odd' or 'even'">
           <tal:block tal:condition="python:isMail=='0'">
             <tal:block tal:repeat="column reportColumns">
-            <td class="tablevalues" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%screenresults[column[4]]" />
+            <td class="tablevalues" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%profileresults[column[4]]" />
             </tal:block>
           </tal:block>
           <tal:block tal:condition="python:isMail=='1'">
             <tal:block tal:repeat="column reportColumns">
-            <td class="inspector" style="font-size:9pt;background-color:#F9F9FF" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%screenresults[column[4]]"/>
+            <td class="inspector" style="font-size:9pt;background-color:#F9F9FF" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%profileresults[column[4]]"/>
             </tal:block>
           </tal:block>
          </tr>

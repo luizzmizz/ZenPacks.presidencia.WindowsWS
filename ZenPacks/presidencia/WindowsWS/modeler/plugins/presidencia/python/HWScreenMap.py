@@ -40,6 +40,7 @@ class HWScreenMap(PythonPlugin):
               om = self.objectMap()
               om.id=om.serialNumber=self.prepId(mon[0])
               om.tag=self.prepId(mon[1])
+              om._prodKey=mon[2]
               om.setModelName=MultiArgs(mon[1],mon[2], 'Unknown Monitors')
               rm.append(om)
         return rm
