@@ -1,22 +1,39 @@
 <html>
 <body class="z-bc">
+<link rel="stylesheet" href="/++resource++WindowsWS/chosen/chosen.css" />
+<style>
+  .chzn-container{font-size:10px;}
+  .chzn-container,.chzn-drop{z-index:3000;}
+</style>
+<script language="javascript">
+function toggleAndSubmit(form,varname){
+    if (form.elements.namedItem(varname).value==0) form.elements.namedItem(varname).value=1;
+    else form.elements.namedItem(varname).value=0;
+    form.submit();
+    }
+</script>
+<script type="text/javascript" src="/zport/portal_skins/zenmodel/datePicker.js"> </script>
+
 <tal:block tal:define="
     tableName string:windowsprofiletable;
     tm here/ZenTableManager;
     tableState python:tm.getTableState(tableName);
     sts python:tm.setReqTableState;
-    reportColumns python:[['Device',            'Device Name',  'deviceLink',           sts(tableName, 'sDevice', here.REQUEST.get('sDevice','1')),0, 'deviceName'],
-                          ['DeviceClass',       'Device Class', 'deviceClassPathLink',  sts(tableName, 'sDeviceClass', here.REQUEST.get('sDeviceClass','1')),1, 'deviceClassPath'],
-                          ['IP',                'IP Address',   'manageIp',             sts(tableName, 'sIP', here.REQUEST.get('sIP','1')),2, 'manageIp'],
-                          ['ProductionState',   'State',        'productionState',      sts(tableName, 'sProductionState', here.REQUEST.get('sProductionState','0')),3, 'productionState'],
-                          ['Tag',               'Tag',          'tag',                  sts(tableName, 'sTag', here.REQUEST.get('sTag','0')),4, 'tag'],
-                          ['ProfileName',       'Profile Name', 'profileName',          sts(tableName, 'sProfileName', here.REQUEST.get('sProfileName','1')),5, 'profileName'],
-                          ['LastLogon',         'Last logon',   'lastLogon',            sts(tableName, 'sLastLogon', here.REQUEST.get('sLastLogon','1')),6, 'lastLogon'],
-                          ['ProfileSize',       'Profile Size', 'profileSize',          sts(tableName, 'sProfileSize', here.REQUEST.get('sProfileSize','1')),7, 'profileBytes'],
-                          ['DesktopSize',       'Desktop Size', 'desktopSize',          sts(tableName, 'sDesktopSize', here.REQUEST.get('sDesktopSize','1')),8, 'desktopBytes'],
-                          ['Path',              'Path',         'path',                 sts(tableName, 'sPath', here.REQUEST.get('sPath','1')),9, 'path'],
-                          ['Location',          'Location',     'locationLink',         sts(tableName, 'sLocation', here.REQUEST.get('sLocation','1')),10, 'location'],
+    columnsspec python:sts(tableName, 'columnsspec', here.REQUEST.get('columnsspec',['0','2','4','5','6','7','8','11']));
+    reportColumns python:[['Device',            'Device Name',  'deviceLink',           'deviceName'],
+                          ['DeviceClass',       'Device Class', 'deviceClassPathLink',  'deviceClassPath'],
+                          ['IP',                'IP Address',   'manageIp',             'manageIp'],
+                          ['ProductionState',   'State',        'productionState',      'productionState'],
+                          ['Tag',               'Tag',          'tag',                  'tag'],
+                          ['ProfileName',       'Profile Name', 'profileName',          'profileName'],
+                          ['LastLogon',         'Last logon',   'lastLogon',            'lastLogon'],
+                          ['ProfileSize',       'Profile Size', 'profileSize',          'profileBytes'],
+                          ['DesktopSize',       'Desktop Size', 'desktopSize',          'desktopBytes'],
+                          ['RackSlot',          'Rack Slot',    'rackSlot',             'rackSlot'],
+                          ['Path',              'Path',         'path',                 'path'],
+                          ['Location',          'Location',     'locationLink',         'location'],
                          ];
+
     cDeviceClass python:sts(tableName, 'cDeviceClass', here.REQUEST.get('cDeviceClass','/'));
     cGroup python:sts(tableName, 'cGroup', here.REQUEST.get('cGroup','/'));
     cSystem python:sts(tableName, 'cSystem', here.REQUEST.get('cSystem','/'));
@@ -37,7 +54,7 @@
                                              });
     
     batch python:tm.getBatch(tableName,pluginOutput['components']);
-    exportFields python:['deviceName', 'deviceClassPath', 'manageIp', 'productionState', 'tag', 'profileName', 'lastLogon', 'profileBytes', 'desktopBytes', 'path', 'location'];
+    exportFields python:['deviceName', 'deviceClassPath', 'manageIp', 'productionState', 'tag', 'profileName', 'lastLogon', 'profileBytes', 'desktopBytes', 'rackSlot', 'path', 'location'];
     isMail python:here.REQUEST.get('isMail','0');
     ">
 
@@ -52,17 +69,9 @@
       <span tal:condition="python:here.REQUEST.get('showAll','')!='show all'" style="font-size=10pt;font-weight:bold;font-family:helvetica,sans-serif;" tal:content="python:'%s (TOP 40)'%here.REQUEST.get('title', 'No title specified')"/>
      </tal:block> <!--tal:block tal:condition="python:isMail=='1'"-->
      <tal:block tal:condition="python:isMail=='0'"><!--Interface for filtering, only viewable if not a mailed Report-->
-     <script language="javascript">
-     function toggleAndSubmit(form,varname){
-          if (form.elements.namedItem(varname).value==0) form.elements.namedItem(varname).value=1;
-          else form.elements.namedItem(varname).value=0;
-          form.submit();
-          }
-     </script>
-     <script type="text/javascript" src="/zport/portal_skins/zenmodel/datePicker.js"> </script>
      <form id="availabilityForm" method="submit">
-      <table class="zentable">
-      <tr><td style="vertical-align:text-top;">
+      <table class="zentable"><!--Header Table-->
+      <tr><td style="vertical-align:text-top;" width="70%" class="tablevalues">
         <table class="zentable"> <!-- Device Filtering -->
           <tr><th class="tableheader" colspan="4">&nbsp;Device Specification</th></tr>
           <tr>
@@ -104,21 +113,22 @@
             <td class="tableheader"/><td class="tablevalues"/>
           </tr>
         </table>
-      </td><td rowspan="2" style="vertical-align:text-top;" class="tableheader">
+      </td><td rowspan="2" style="vertical-align:text-top;" class="tablevalues" width="30%">
         <table class="zentable"> <!--Show/Hide Columns table-->
           <tr><th class="tableheader" colspan="2">&nbsp;Show/hide Columns</th></tr>
+          <tr><td>
+          <select data-placeholder="Select shown columns" multiple="true" name="columnsspec" size="8" class="chzn-select"  style="padding:0px;width:100%;">
           <tal:block tal:repeat="column reportColumns" >
-               <tr>
-                <td>
-                <input type="checkbox" tal:attributes="checked python:column[3]=='1';onchange python:'javascript:toggleAndSubmit(this.form,\'s%s\');;'%column[0];" >
-                <span tal:content="python:column[1]"/>
-                <input type="hidden" tal:attributes="name python:'s%s'%column[0];value python:column[3];">
-                </td>
-               </tr>
+            <option tal:content="python:column[1]" tal:define="index repeat/column/index" tal:attributes="value index;selected python:'%s'%index in columnsspec"/>
           </tal:block>
+          </select>
+          </td></tr>
+          <tr><td style="text-align:center;">
+            <input type="button" value="Apply columns" onclick="javascript:this.form.submit();">
+          </td></tr>
         </table>
       </td></tr>
-      <tr><td style="vertical-align:text-top;">
+      <tr><td style="vertical-align:text-top;" class="tablevalues">
       <!--Additional Filters Table-->
         <table class="zentable"> 
           <tr><th class="tableheader" colspan="4">&nbsp;Windows Profile filtering</th></tr>
@@ -136,7 +146,7 @@
               <option value=''>All profiles</option>
               <option tal:repeat="org python:pluginOutput['profileNames']" tal:content="org" tal:attributes="value org;selected python:org==cProfileName"/>
               </select>
-            </td>            
+            </td>
           </tr>
         </table>
       </td><td/></tr>
@@ -151,14 +161,13 @@
       <tal:block metal:fill-slot="zentablecontents">
         <tal:block tal:condition="python:isMail=='0'">
          <tr><td colspan="100%" class="tableheader" align='center'><form metal:use-macro="here/zenTableNavigation/macros/navtool"></form></td></tr>
-        </tal:block>
-        <tal:block tal:condition="python:isMail=='0'">
          <tr>
           <tal:block tal:repeat="column reportColumns">
-          <th tal:condition="python:column[3]=='1'" tal:replace="structure python:tm.getTableHeader(tableName,column[5],column[1])"/>
+          <th tal:define="index repeat/column/index" tal:condition="python:'%s'%index in columnsspec" tal:replace="structure python:tm.getTableHeader(tableName,column[3],column[1])"/>
           </tal:block>
          </tr>
         </tal:block>
+
         <tal:block tal:condition="python:isMail=='1'" >
           <tr style="font-weight:bold;background-color:#E0E0E0;font-size:9pt;text-align:center;font-family: helvetica, sans-serif;">
            <tal:block tal:repeat="column reportColumns">
@@ -166,30 +175,31 @@
            </tal:block>
          </tr>
         </tal:block>
-        <tal:block tal:repeat="profile batch">
-         <tal:block tal:define="profileresults python:[
-                                profile.deviceLink,
-                                profile.deviceClassPathLink,
-                                profile.manageIp,
-                                profile.productionState,
-                                profile.tag,
-                                profile.profileName,
-                                profile.lastLogon,
-                                profile.profileSize,
-                                profile.desktopSize,
-                                profile.path,
-                                profile.locationLink,
-                                ];
+        <tal:block tal:repeat="cursor batch">
+         <tal:block tal:define="resultsRow python:dict(zip([i[0] for i in reportColumns],[
+                                  cursor.deviceLink,
+                                  cursor.deviceClassPathLink,
+                                  cursor.manageIp,
+                                  cursor.productionState,
+                                  cursor.tag,
+                                  cursor.profileName,
+                                  cursor.lastLogon,
+                                  cursor.profileSize,
+                                  cursor.desktopSize,
+                                  cursor.rackSlot,
+                                  cursor.path,
+                                  cursor.locationLink,
+                                  ]));
                                 ">
-         <tr tal:define="odd repeat/profile/odd" tal:attributes="class python:odd and 'odd' or 'even'">
+         <tr tal:define="odd repeat/cursor/odd;index repeat/cursor/index" tal:attributes="class python:odd and 'odd' or 'even'">
           <tal:block tal:condition="python:isMail=='0'">
             <tal:block tal:repeat="column reportColumns">
-            <td class="tablevalues" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%profileresults[column[4]]" />
+            <td class="tablevalues" tal:define="colindex repeat/column/index" tal:condition="python:'%s'%colindex in columnsspec" tal:content="structure python:'&nbsp;%s'%resultsRow[reportColumns[colindex][0]]" />
             </tal:block>
           </tal:block>
           <tal:block tal:condition="python:isMail=='1'">
             <tal:block tal:repeat="column reportColumns">
-            <td class="inspector" style="font-size:9pt;background-color:#F9F9FF" tal:condition="python:column[3]=='1'" tal:content="structure python:'&nbsp;%s'%profileresults[column[4]]"/>
+            <td class="inspector" tal:define="colindex repeat/column/index" style="font-size:9pt;background-color:#F9F9FF" tal:condition="python:'%s'%colindex in columnsspec" tal:content="structure python:'&nbsp;%s'%resultsRow[reportColumns[colindex][0]]"/>
             </tal:block>
           </tal:block>
          </tr>
@@ -206,5 +216,11 @@
   </tal:block> <!--fill-slot="report"-->
  </tal:block> <!--use-macro="here/reportMacros/macros/exportableReport"-->
 </tal:block> <!--tal:define=-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+<script src="/++resource++WindowsWS/chosen/chosen.jquery.js" type="text/javascript"></script>
+<script type="text/javascript">
+  $(".chzn-select").chosen();
+  $(".chzn-select-deselect").chosen({allow_single_deselect:true});
+</script>
 </body>
 </html>

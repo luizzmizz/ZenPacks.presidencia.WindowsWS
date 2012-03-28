@@ -28,16 +28,23 @@ class HWScreenInventoryCollection:
           resultset=set ([ dev for dev in resultset if dev.productionState==int(productionState) ])
         components=[ c.getObject() for c in dmd.Devices.componentSearch({'meta_type':'HWScreen'}) if c.getObject().device() in resultset ]
 
+        superreport['rackslot']=sorted(list(set([i.device().rackSlot for i in components])))
         superreport['hwman']=sorted(list(set([i.getManufacturerName() for i in components])))
-        superreport['hwproducts']=sorted(list(set([i.getProductName() for i in components])))
 
         cManufacturer=args.get('cManufacturer','')
         if cManufacturer!='':
           components = [ c for c in components if c.getManufacturerName()==cManufacturer ]
+          
+        superreport['hwproducts']=sorted(list(set([i.getProductName() for i in components])))
+
         cProductName=args.get('cProductName','')
         if cProductName!='':
-          components = [ c for c in components if c.getProductName()==cProductName ]
-        #for each device at resultset & survivordevs, generate the info
+          components = [ c for c in components if c.getProductName()==cProductName  ]
+          
+        cRackSlot=args.get('cRackSlot','')
+        if cRackSlot!='':
+          components = [ c for c in components if c.rackSlot==cRackSlot]
+        ##for each device at resultset & survivordevs, generate the info
         for c in components:
           dev=c.device()
           report.append(
@@ -57,6 +64,7 @@ class HWScreenInventoryCollection:
                      serial = c.serialNumber,
                      manufacturerName = c.getManufacturerName(),
                      manufacturerLink = c.getManufacturerLink(),
+                     rackSlot = dev.rackSlot,
                      description = c.getDescription()
                      )
                     )

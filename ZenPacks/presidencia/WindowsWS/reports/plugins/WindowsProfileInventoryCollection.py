@@ -27,13 +27,12 @@ class WindowsProfileInventoryCollection:
         if productionState!='All':
           resultset=set ([ dev for dev in resultset if dev.productionState==int(productionState) ])
         components=[ c.getObject() for c in dmd.Devices.componentSearch({'meta_type':'WindowsProfile'}) if c.getObject().device() in resultset ]
-        
-        superreport['profileNames']=[ c.name() for c in components ]
-        
+
+        superreport['profileNames']=sorted(list(set([ c.name() for c in components ])))
+
         lastLogonFilter=args.get('cLastLogonFilter','1')
         cProfileName=args.get('cProfileName','')
 
-        
         #for each device at resultset & survivordevs, generate the info
         for c in components:
           dev=c.device()
@@ -57,6 +56,7 @@ class WindowsProfileInventoryCollection:
                      desktopSize = c.getDesktopSize(),
                      profileBytes = c.profileBytes,
                      desktopBytes = c.desktopBytes,
+                     rackSlot = c.device().rackSlot,
                      path = c.path,
                      )
                     )
