@@ -5,7 +5,8 @@ PASSWORD=$3
 REGSHELL=/usr/local/samba/bin/regshell
 cmd="$REGSHELL -U $USERNAME --password $PASSWORD --remote=$COMPUTER"
 
-for DISPLAY in `echo "predef HKEY_LOCAL_MACHINE
+if ping -c 1 $COMPUTER > /dev/null; then 
+ for DISPLAY in `echo "predef HKEY_LOCAL_MACHINE
   ck SYSTEM
   ck CurrentControlSet
   ck Enum
@@ -38,4 +39,5 @@ for DISPLAY in `echo "predef HKEY_LOCAL_MACHINE
             #echo "DISPLAY:$DISPLAY;DISPLAYID:$DISPLAYID;EDID:$EDID;SN:$SN;MODEL:$MODEL";
           fi
         done;
-done;
+ done;
+fi

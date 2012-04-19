@@ -15,7 +15,6 @@ class WindowsProfileMap(WMIPlugin):
       "root/cimv2",
         {
         'LocalPath':'path',
-        'Loaded':'loaded',
         'LastUseTime':'lastUsed'
         }
     )
@@ -32,15 +31,24 @@ class WindowsProfileMap(WMIPlugin):
             om = self.objectMap(instance)
             om.id = om.name = self.prepId(om.path[::-1].split('\\')[0][::-1])
             om.lastUsed = str (om.lastUsed)
-            (om.profileBytes,om.desktopBytes)=self.getProfileSizes(device,log,om.path)
-            rm.append(om)
-          except AttributeError:
+            log.info('Retrieving storage info for %s...'%om.path)
+            ret=self.getProfileSizes(device,log,om.path)
+            if ret!=None:
+              (om.profileBytes,om.desktopBytes)=ret
+              rm.append(om)
+          except AttributeError, e:
+            log.error('AttributeError %s'%e)
             continue
         return rm
 
   def getProfileSizes(self,device,log,profilePath):
     crida = 'sh %s/../../../../libexec/getProfileSize.sh %s %s %s "%s" 2>/dev/null'%(os.path.dirname(__file__),device.manageIp,device.zWinUser,device.zWinPassword,profilePath)
     f=os.popen(crida)
+    
     for i in f.readlines():
-      (profile,desktop)=(i.split(' ')[0].split(':')[1],i.split(' ')[1].split(':')[1])
+      try:
+        (profile,desktop)=(i.split(' ')[0].split(':')[1],i.split(' ')[1].split(':')[1])
+      except Exception,e:
+        log.warning('Exception %s processing line %s'%(e,i))
+        return None
     return (profile,desktop)

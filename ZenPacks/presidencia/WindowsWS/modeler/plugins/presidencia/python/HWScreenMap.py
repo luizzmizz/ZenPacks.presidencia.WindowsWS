@@ -23,12 +23,14 @@ class HWScreenMap(PythonPlugin):
         p=Popen(crida,shell=True,stdout=PIPE,stderr=PIPE)
         stdout,stderr=p.communicate()
         values=[]
+        enteredEdids={}
         for line in stdout.split('\n'):
           if line<>'':
             [ Edid, ProductKey ]=line.split(',')
-            #edid= "".join(chr(i) for i in Edid)
-            [SerialNumber,Model]=self.decodeEdid(Edid,log)
-            values.append([SerialNumber,Model,ProductKey])
+            if not enteredEdids.has_key(Edid):
+              enteredEdids[Edid]=1
+              [SerialNumber,Model]=self.decodeEdid(Edid,log)
+              values.append([SerialNumber,Model,ProductKey])
         return values 
 
     def process(self, device, results, log):

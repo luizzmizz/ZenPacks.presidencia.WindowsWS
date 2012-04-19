@@ -3,21 +3,27 @@
 <!-- ('', 'zport', 'dmd', 'Devices', 'Discovered', 'Workstation') -->
 <object id='/zport/dmd/Devices/Discovered/Workstation' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
 <property visible="True" type="boolean" id="zSnmpMonitorIgnore" >
-True
+False
 </property>
 <object id='Presidencia' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
+<property visible="True" type="float" id="zSnmpTimeout" >
+2.0
+</property>
 </object>
 </object>
 <!-- ('', 'zport', 'dmd', 'Devices', 'Workstation') -->
 <object id='/zport/dmd/Devices/Workstation' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
 <property visible="True" type="lines" id="zCollectorPlugins" >
-['community.wmi.DeviceMap', 'community.wmi.FileSystemMap', 'presidencia.wmi.HRSWInstalledMap', 'presidencia.wmi.LastLogonMap', 'presidencia.wmi.LocalPrinterMap', 'presidencia.python.HWScreenMap', 'presidencia.wmi.WindowsProfileMap']
+['community.wmi.DeviceMap', 'community.wmi.FileSystemMap', 'presidencia.wmi.LastLogonMap', 'presidencia.wmi.LocalPrinterMap', 'presidencia.python.HWScreenMap', 'presidencia.wmi.ChassisMap', 'presidencia.wmi.HRSWInstalledMap', 'presidencia.wmi.WindowsProfileMap']
 </property>
 <property visible="True" type="boolean" id="zSnmpMonitorIgnore" >
 True
 </property>
 <property visible="True" type="boolean" id="zWmiMonitorIgnore" >
 False
+</property>
+<property visible="True" type="int" id="zCollectorClientTimeout" >
+300
 </property>
 <tomanycont id='rrdTemplates'>
 <object id='Device' module='Products.ZenModel.RRDTemplate' class='RRDTemplate'>
@@ -944,9 +950,10 @@ AVERAGE
 </tomanycont>
 <object id='Presidencia' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
 <object id='ATIC' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
-<property visible="True" type="lines" id="zCollectorPlugins" >
-['community.wmi.DeviceMap', 'community.wmi.FileSystemMap', 'presidencia.wmi.HRSWInstalledMap', 'presidencia.wmi.LastLogonMap', 'presidencia.wmi.LocalPrinterMap', 'presidencia.python.HWScreenMap']
-</property>
+<object id='XP' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
+</object>
+</object>
+<object id='XP' module='Products.ZenModel.DeviceClass' class='DeviceClass'>
 </object>
 </object>
 </object>
