@@ -21,7 +21,7 @@ class LocalPrinterMap(WMIPlugin):
                 'PortName':'portName',
                 'EnableBIDI':'local',
                 'Default':'default',
-                'DeviceID':'deviceId'
+                'DeviceID':'id'
             }
         ),
     }
@@ -33,7 +33,7 @@ class LocalPrinterMap(WMIPlugin):
         for instance in results.get("Win32_Printer", []):
             try:
                 om = self.objectMap(instance)
-                om.id = self.prepId(om.deviceId)
+                om.id = self.prepId(om.id)
                 om.local = (re.search('^[0-9]',om.portName)<0)
                 rm.append(om)
             except AttributeError:
